@@ -60,6 +60,14 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        env:
+          SA_PASSWORD: Testing@6CD21E2E-7028-4AE0-923E-B11288822489
+          ACCEPT_EULA: 'Y'
+        ports:
+          - 1433:1433
     strategy:
       fail-fast: false
       matrix:
