@@ -3,12 +3,12 @@ package mssql
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-	_ "github.com/microsoft/go-mssqldb"
 	"net/url"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	_ "github.com/microsoft/go-mssqldb"
 )
 
 type client struct {
@@ -42,12 +42,12 @@ func (m client) GetUser(ctx context.Context, username string) (User, error) {
 	}
 	defer conn.Close()
 
-	cmd := `SELECT 
-    P.[name] AS id, 
+	cmd := `SELECT
+    P.[name] AS id,
     COALESCE(CONVERT(varchar(175), P.[sid],1), '') AS sid,
-    P.[name] AS name, 
+    P.[name] AS name,
     P.[type] AS type,
-    CASE WHEN P.[type] IN ('E', 'X') THEN 1 ELSE 0 END AS ext, 
+    CASE WHEN P.[type] IN ('E', 'X') THEN 1 ELSE 0 END AS ext,
     COALESCE(L.[name], '') AS login,
     COALESCE(P.[default_schema_name], '') AS default_schema_name
 FROM sys.database_principals P
@@ -93,23 +93,23 @@ func buildCreateUser(create CreateUser) (string, []any, error) {
 	var args []any
 
 	if create.Login != "" && create.Password != "" {
-		return "", nil, errors.New(fmt.Sprintf("invalid user %s, login users may not have passwords", create.Username))
+		return "", nil, fmt.Errorf("invalid user %s, login users may not have passwords", create.Username)
 	}
 
 	if create.External && create.Password != "" {
-		return "", nil, errors.New(fmt.Sprintf("invalid user %s, external users may not have passwords", create.Username))
+		return "", nil, fmt
 	}
 
 	if create.External && create.Login != "" {
-		return "", nil, errors.New(fmt.Sprintf("invalid user %s, external users must not have a login", create.Username))
+		return "", nil, fmt.Errorf("invalid user %s, external users must not have a login", create.Username)
 	}
 
 	if create.External && create.Sid != "" {
-		return "", nil, errors.New(fmt.Sprintf("invalid user %s, external users must not have a SID", create.Username))
+		return "", nil, fmt.Errorf("invalid user %s, external users must not have a SID", create.Username)
 	}
 
 	if create.DefaultSchema == "" {
-		return "", nil, errors.New(fmt.Sprintf("invalid user %s, default schema must be specified", create.Username))
+		return "", nil, fmt.Errorf("invalid user %s, default schema must be specified", create.Username)
 	}
 
 	cmdBuilder.WriteString("DECLARE @sql NVARCHAR(max);\n")
